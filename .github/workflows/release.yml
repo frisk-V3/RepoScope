@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -17,17 +17,13 @@ jobs:
       with:
         dotnet-version: "8.0.x"
 
-    - name: Compile with csc
+    - name: Compile C# (single file)
       run: |
-        dotnet exec $(dirname $(which dotnet))/../sdk/*/Roslyn/bincore/csc.dll \
-          -out:RepoScope.exe main.cs \
-          -r:$(dirname $(which dotnet))/../shared/Microsoft.NETCore.App/*/System.Console.dll \
-          -r:$(dirname $(which dotnet))/../shared/Microsoft.NETCore.App/*/System.Net.Http.dll \
-          -r:$(dirname $(which dotnet))/../shared/Microsoft.NETCore.App/*/System.Runtime.dll \
-          -r:$(dirname $(which dotnet))/../shared/Microsoft.NETCore.App/*/System.Text.Json.dll
+        $csc = (Get-ChildItem "C:\Program Files\dotnet\sdk" -Recurse -Filter csc.exe | Select-Object -First 1).FullName
+        & $csc /nologo /out:RepoScope.exe main.cs
 
     - name: Create ZIP
-      run: zip RepoScope-${{ github.ref_name }}.zip RepoScope.exe
+      run: Compress-Archive -Path RepoScope.exe -DestinationPath RepoScope-${{ github.ref_name }}.zip
 
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v2
