@@ -1,0 +1,37 @@
+name: Build and Release RepoScope
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: "8.0.x"
+
+    - name: Compile with csc
+      run: |
+        dotnet exec $(dirname $(which dotnet))/../sdk/*/Roslyn/bincore/csc.dll \
+          -out:RepoScope.exe main.cs \
+          -r:$(dirname $(which dotnet))/../shared/Microsoft.NETCore.App/*/System.Console.dll \
+          -r:$(dirname $(which dotnet))/../shared/Microsoft.NETCore.App/*/System.Net.Http.dll \
+          -r:$(dirname $(which dotnet))/../shared/Microsoft.NETCore.App/*/System.Runtime.dll \
+          -r:$(dirname $(which dotnet))/../shared/Microsoft.NETCore.App/*/System.Text.Json.dll
+
+    - name: Create ZIP
+      run: zip RepoScope-${{ github.ref_name }}.zip RepoScope.exe
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v2
+      with:
+        files: RepoScope-${{ github.ref_name }}.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
