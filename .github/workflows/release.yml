@@ -12,18 +12,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup .NET
+    - name: Setup .NET 8
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: "8.0.x"
 
-    - name: Compile C# (single file)
+    - name: Build single-file exe
       run: |
-        $csc = (Get-ChildItem "C:\Program Files\dotnet\sdk" -Recurse -Filter csc.exe | Select-Object -First 1).FullName
-        & $csc /nologo /out:RepoScope.exe main.cs
+        dotnet publish main.cs -o out -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -r win-x64
 
     - name: Create ZIP
-      run: Compress-Archive -Path RepoScope.exe -DestinationPath RepoScope-${{ github.ref_name }}.zip
+      run: Compress-Archive -Path out\* -DestinationPath RepoScope-${{ github.ref_name }}.zip
 
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v2
