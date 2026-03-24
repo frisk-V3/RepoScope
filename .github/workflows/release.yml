@@ -17,9 +17,9 @@ jobs:
       with:
         dotnet-version: "8.0.x"
 
-    - name: Build single-file exe
+    - name: Build normal exe
       run: |
-        dotnet publish main.cs -o out -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -r win-x64
+        dotnet publish main.cs -o out -c Release -r win-x64 --self-contained false
 
     - name: Create ZIP
       run: Compress-Archive -Path out\* -DestinationPath RepoScope-${{ github.ref_name }}.zip
